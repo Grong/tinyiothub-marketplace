@@ -79,3 +79,79 @@ impl Template {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn valid_template() -> serde_json::Value {
+        serde_json::json!({
+            "id": "template-001",
+            "name": "温湿度传感器",
+            "version": "1.0.0",
+            "protocol": "modbus",
+            "author_name": "tinyiothub",
+            "license": "MIT",
+            "file_url": "https://example.com/template.zip",
+            "updated_at": "2026-03-29T00:00:00+00:00"
+        })
+    }
+
+    #[test]
+    fn validate_valid_template() {
+        let template = valid_template();
+        Template::validate(&template).unwrap();
+    }
+
+    #[test]
+    fn validate_missing_required_field() {
+        let mut template = valid_template();
+        template.as_object_mut().unwrap().remove("author_name");
+        let result = Template::validate(&template);
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), ValidationError::MissingField(f) if f == "author_name"));
+    }
+
+    #[test]
+    fn validate_invalid_id_format() {
+        let mut template = valid_template();
+        template.as_object_mut().unwrap().insert(
+            "id".to_string(),
+            serde_json::Value::String("template 001!".to_string()),
+        );
+        let result = Template::validate(&template);
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), ValidationError::InvalidField(f) if f.contains("invalid id format")));
+    }
+
+    #[test]
+    fn validate_invalid_version_format() {
+        let mut template = valid_template();
+        template.as_object_mut().unwrap().insert(
+            "version".to_string(),
+            serde_json::Value::String("not a version".to_string()),
+        );
+        let result = Template::validate(&template);
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), ValidationError::InvalidField(f) if f.contains("invalid version")));
+    }
+
+    #[test]
+    fn validate_invalid_updated_at() {
+        let mut template = valid_template();
+        template.as_object_mut().unwrap().insert(
+            "updated_at".to_string(),
+            serde_json::Value::String("not-a-date".to_string()),
+        );
+        let result = Template::validate(&template);
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), ValidationError::InvalidField(f) if f.contains("invalid updated_at")));
+    }
+
+    #[test]
+    fn validate_non_object_fails() {
+        let result = Template::validate(&serde_json::Value::String("not an object".to_string()));
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), ValidationError::InvalidField(f) if f == "not an object"));
+    }
+}

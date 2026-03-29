@@ -37,3 +37,39 @@ impl PaginationParams {
         (self.page - 1) * self.per_page
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn valid_params() {
+        let params = PaginationParams { page: 1, per_page: 20, search: None, category: None, protocol: None };
+        params.validate().unwrap();
+        assert_eq!(params.offset(), 0);
+    }
+
+    #[test]
+    fn page_zero_invalid() {
+        let params = PaginationParams { page: 0, per_page: 20, search: None, category: None, protocol: None };
+        assert!(params.validate().is_err());
+    }
+
+    #[test]
+    fn per_page_over_100_invalid() {
+        let params = PaginationParams { page: 1, per_page: 101, search: None, category: None, protocol: None };
+        assert!(params.validate().is_err());
+    }
+
+    #[test]
+    fn per_page_zero_invalid() {
+        let params = PaginationParams { page: 1, per_page: 0, search: None, category: None, protocol: None };
+        assert!(params.validate().is_err());
+    }
+
+    #[test]
+    fn offset_calculation() {
+        let params = PaginationParams { page: 3, per_page: 10, search: None, category: None, protocol: None };
+        assert_eq!(params.offset(), 20);
+    }
+}
