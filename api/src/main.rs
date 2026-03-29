@@ -24,7 +24,7 @@ pub struct AppState {
 fn build_app(state: AppState) -> Router {
     Router::new()
         .merge(api::health::routes())
-        .nest("/v1", api::v1::routes())
+        .nest("/api/v1", api::v1::routes())
         .nest_service("/static", ServeDir::new("web/dist"))
         .with_state(state)
 }

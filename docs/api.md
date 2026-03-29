@@ -4,7 +4,7 @@ API 文档。
 
 ## 基础信息
 
-- **Base URL**: `http://localhost:3003`
+- **Base URL**: `http://localhost:3003/api`
 - **响应格式**: JSON
 - **认证**: 无（公开 API）
 
@@ -80,7 +80,7 @@ API 文档。
 
 ## 模板 API
 
-### GET /v1/templates
+### GET /api/v1/templates
 
 获取模板列表。
 
@@ -129,7 +129,7 @@ API 文档。
 
 ---
 
-### GET /v1/templates/{id}
+### GET /api/v1/templates/{id}
 
 获取模板详情。
 
@@ -179,7 +179,7 @@ API 文档。
 
 ---
 
-### GET /v1/templates/{id}/download
+### GET /api/v1/templates/{id}/download
 
 下载模板文件。
 
@@ -211,7 +211,7 @@ API 文档。
 
 ## 驱动 API
 
-### GET /v1/drivers
+### GET /api/v1/drivers
 
 获取驱动列表。
 
@@ -225,11 +225,11 @@ API 文档。
 | `category` | string | - | 按分类筛选 |
 | `protocol` | string | - | 按协议筛选 |
 
-**响应格式** 同 `/v1/templates`。
+**响应格式** 同 `/api/v1/templates`。
 
 ---
 
-### GET /v1/drivers/{id}
+### GET /api/v1/drivers/{id}
 
 获取驱动详情。
 
@@ -267,7 +267,7 @@ API 文档。
 
 ---
 
-### GET /v1/drivers/{id}/download
+### GET /api/v1/drivers/{id}/download
 
 下载驱动。
 
@@ -287,7 +287,7 @@ API 文档。
 
 ## Webhook API
 
-### POST /v1/webhook/github
+### POST /api/v1/webhook/github
 
 接收 GitHub push 事件，触发同步。
 
