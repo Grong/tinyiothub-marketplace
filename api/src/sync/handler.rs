@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use std::collections::HashMap;
+use std::path::PathBuf;
 use parking_lot::RwLock;
 use thiserror::Error;
 use tracing::{info, warn, error};
@@ -24,6 +25,7 @@ pub struct SyncService {
     cache: Arc<SledCache>,
     github: Arc<GitHubClient>,
     config: Arc<RwLock<Vec<RepositoryConfig>>>,
+    local_data_path: Arc<RwLock<Option<PathBuf>>>,
 }
 
 impl SyncService {
@@ -32,7 +34,17 @@ impl SyncService {
             cache,
             github,
             config: Arc::new(RwLock::new(Vec::new())),
+            local_data_path: Arc::new(RwLock::new(None)),
         }
+    }
+
+    pub fn with_local_data_path(self, path: PathBuf) -> Self {
+        *self.local_data_path.write() = Some(path);
+        self
+    }
+
+    pub fn set_local_data_path(&self, path: PathBuf) {
+        *self.local_data_path.write() = Some(path);
     }
 
     /// Load repository config from JSON file
@@ -72,11 +84,34 @@ impl SyncService {
         let mut failed_repos = 0;
 
         for config in &configs {
-            let result = self.github.fetch_index_json(
-                &config.repo,
-                "main",
-                &config.path,
-            ).await;
+            // Try local file first if configured
+            let local_path = self.local_data_path.read().clone();
+            let result = if let Some(ref local_path) = local_path {
+                let local_file = local_path.join(&config.path).join("index.json");
+                if local_file.exists() {
+                    info!("Reading from local file: {:?}", local_file);
+                    match tokio::fs::read_to_string(&local_file).await {
+                        Ok(content) => {
+                            match serde_json::from_str::<Vec<Value>>(&content) {
+                                Ok(items) => Ok(items),
+                                Err(e) => {
+                                    warn!("Failed to parse local file {:?}: {}", local_file, e);
+                                    Err(GitHubError::NotFound)
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            warn!("Failed to read local file {:?}: {}", local_file, e);
+                            Err(GitHubError::NotFound)
+                        }
+                    }
+                } else {
+                    warn!("Local file {:?} not found, falling back to GitHub", local_file);
+                    self.github.fetch_index_json(&config.repo, "main", &config.path).await
+                }
+            } else {
+                self.github.fetch_index_json(&config.repo, "main", &config.path).await
+            };
 
             match result {
                 Ok(items) => {

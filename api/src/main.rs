@@ -8,6 +8,7 @@ use std::sync::Arc;
 use axum::Router;
 use tower_http::services::ServeDir;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use tracing::info;
 use infrastructure::cache::SledCache;
 use infrastructure::github::GitHubClient;
 use sync::SyncService;
@@ -38,9 +39,9 @@ async fn main() -> anyhow::Result<()> {
         .init();
 
     let github_token = std::env::var("GITHUB_TOKEN")
-        .expect("GITHUB_TOKEN must be set");
+        .unwrap_or_else(|_| "dummy".to_string());
     let _webhook_secret = std::env::var("GITHUB_WEBHOOK_SECRET")
-        .expect("GITHUB_WEBHOOK_SECRET must be set");
+        .unwrap_or_else(|_| "dummy".to_string());
 
     let cache = Arc::new(SledCache::new(
         std::env::var("SLED_PATH").unwrap_or_else(|_| "/tmp/marketplace.sled".into()),
@@ -52,6 +53,13 @@ async fn main() -> anyhow::Result<()> {
         Arc::clone(&cache),
         Arc::clone(&github),
     ));
+
+    // Set local data path if configured (for local development without GitHub)
+    if let Ok(local_data_path) = std::env::var("LOCAL_DATA_PATH") {
+        let sync_service = sync_service.clone();
+        sync_service.set_local_data_path(std::path::PathBuf::from(local_data_path));
+        info!("Local data path configured");
+    }
 
     // Load repository config
     let config_path = std::env::var("REPOS_CONFIG").unwrap_or_else(|_| "config/repositories.json".into());
