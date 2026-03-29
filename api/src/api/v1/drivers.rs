@@ -4,11 +4,34 @@ use axum::{
     response::{IntoResponse, Response},
     Json, Router,
 };
+use std::str::FromStr;
+use url::Url;
 use crate::AppState;
 use crate::dto::{ApiResponse, DriverDetail, DriverListItem, PaginatedList, PaginationParams};
 use crate::domain::Driver;
 
 const CACHE_STALE_HEADER: &'static str = "X-Cache-Stale";
+const ALLOWED_DOWNLOAD_DOMAINS: &[&str] = &[
+    "github.com",
+    "raw.githubusercontent.com",
+];
+
+fn validate_download_url(url_str: &str) -> Result<Url, (StatusCode, Json<ApiResponse<()>>)> {
+    let url = Url::from_str(url_str)
+        .map_err(|_| (StatusCode::BAD_REQUEST, Json(ApiResponse::<()>::error(40001, "invalid download URL"))))?;
+
+    if url.scheme() != "https" {
+        return Err((StatusCode::BAD_REQUEST, Json(ApiResponse::<()>::error(40002, "download URL must use HTTPS"))));
+    }
+
+    let host = url.host_str().ok_or_else(|| (StatusCode::BAD_REQUEST, Json(ApiResponse::<()>::error(40003, "download URL missing host"))))?;
+
+    if !ALLOWED_DOWNLOAD_DOMAINS.iter().any(|d| host == *d || host.ends_with(&format!(".{}", d))) {
+        return Err((StatusCode::BAD_REQUEST, Json(ApiResponse::<()>::error(40004, "download URL domain not allowed"))));
+    }
+
+    Ok(url)
+}
 
 pub fn routes() -> Router<AppState> {
     Router::new()
@@ -124,8 +147,11 @@ async fn download_driver(
         .or(driver.get("documentation").and_then(|v| v.as_str()))
         .unwrap_or("https://github.com");
 
+    // Validate URL before redirect (SSRF protection)
+    let validated_url = validate_download_url(redirect_url)?;
+
     let mut headers = HeaderMap::new();
-    headers.insert("Location", redirect_url.parse().unwrap());
+    headers.insert("Location", validated_url.to_string().parse().unwrap());
 
     Ok((StatusCode::FOUND, headers, ()).into_response())
 }

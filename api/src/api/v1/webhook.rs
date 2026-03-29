@@ -24,7 +24,15 @@ async fn webhook_handler(
     body: String,
 ) -> Result<Response, (StatusCode, Json<ApiResponse<()>>)> {
     // Step 1: HMAC verification
-    let webhook_secret = std::env::var("GITHUB_WEBHOOK_SECRET").unwrap_or_default();
+    let webhook_secret = std::env::var("GITHUB_WEBHOOK_SECRET").unwrap_or_else(|_| {
+        tracing::error!("GITHUB_WEBHOOK_SECRET environment variable is not set");
+        "".to_string()
+    });
+
+    if webhook_secret.is_empty() {
+        tracing::error!("GITHUB_WEBHOOK_SECRET is empty - webhook verification disabled");
+        return Err((StatusCode::INTERNAL_SERVER_ERROR, Json(ApiResponse::<()>::error(500, "Server misconfigured"))));
+    }
 
     if let Some(signature_header) = headers.get("x-hub-signature-256") {
         let signature = signature_header.to_str().unwrap_or("");
