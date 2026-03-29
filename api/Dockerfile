@@ -28,12 +28,8 @@ RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/
 # Copy binary from builder
 COPY --from=builder /app/target/release/tinyiothub-marketplace-api /app/tinyiothub-marketplace-api
 
-# Create data directory with proper permissions for non-root user
-RUN mkdir -p /data && chown -R 1000:1000 /data
-
-# Create non-root user
-RUN useradd -m -u 1000 appuser
-USER appuser
+# Create data directory for template/driver files
+RUN mkdir -p /app/data/templates /app/data/drivers
 
 EXPOSE 3003
 

@@ -23,5 +23,5 @@ npm-debug.log*
 # Editor directories
 *.sublime-*
 
-# Sled cache
+# Sled database (runtime cache)
 *.sled

@@ -8,16 +8,11 @@ services:
     ports:
       - "3003:3003"
     environment:
-      - GITHUB_TOKEN=${GITHUB_TOKEN:-dummy}
-      - GITHUB_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET:-dummy}
       - SLED_PATH=/data/marketplace.sled
       - RUST_LOG=info
-      - REPOS_CONFIG=/app/config/repositories.json
-      - LOCAL_DATA_PATH=/app/local-data
+      - LOCAL_DATA_PATH=/app/data
     volumes:
-      - ./data:/data
-      - ./config:/app/config:ro
-      - /Users/chenguorong/code/my/tinyiothub-marketplace-repo:/app/local-data:ro
+      - ./data:/app/data
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:3003/health"]
       interval: 30s
