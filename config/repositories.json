@@ -1,0 +1,4 @@
+[
+  { "type": "template", "repo": "tinyiothub/marketplace", "path": "templates" },
+  { "type": "driver", "repo": "tinyiothub/marketplace", "path": "drivers" }
+]

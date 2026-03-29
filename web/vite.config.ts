@@ -1,0 +1,14 @@
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  build: {
+    outDir: 'dist',
+    sourcemap: true,
+  },
+  server: {
+    port: 5173,
+    proxy: {
+      '/v1': 'http://localhost:3003',
+    },
+  },
+});
