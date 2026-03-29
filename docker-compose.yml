@@ -1,15 +1,18 @@
 services:
   api:
-    image: docker.io/chenguorongz/tinyiothub-marketplace-api:latest
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    image: chenguorongz/tinyiothub-marketplace-api:latest
     ports:
       - "3003:3003"
     environment:
-      - GITHUB_TOKEN=${GITHUB_TOKEN}
-      - GITHUB_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET}
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-dummy}
+      - GITHUB_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET:-dummy}
       - SLED_PATH=/data/marketplace.sled
       - RUST_LOG=info
     volumes:
-      - sled-data:/data
+      - ./data:/data
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:3003/health"]
       interval: 30s
@@ -17,7 +20,10 @@ services:
       retries: 3
 
   web:
-    image: docker.io/chenguorongz/tinyiothub-marketplace-web:latest
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    image: chenguorongz/tinyiothub-marketplace-web:latest
     ports:
       - "8080:80"
     depends_on:
