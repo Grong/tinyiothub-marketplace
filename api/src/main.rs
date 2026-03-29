@@ -74,7 +74,7 @@ async fn main() -> anyhow::Result<()> {
     tokio::spawn(async move {
         use tokio_cron::{Scheduler, Job};
         let mut scheduler = Scheduler::utc();
-        let job = Job::new_sync("0 * * * *", move || {
+        let job = Job::new_sync("0 0 * * * *", move || {
             let sync = Arc::clone(&sync_for_cron);
             tokio::spawn(async move {
                 if let Err(e) = sync.full_sync().await {

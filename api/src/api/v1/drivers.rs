@@ -13,8 +13,8 @@ const CACHE_STALE_HEADER: &'static str = "X-Cache-Stale";
 pub fn routes() -> Router<AppState> {
     Router::new()
         .route("/drivers", axum::routing::get(list_drivers))
-        .route("/drivers/:id", axum::routing::get(get_driver))
-        .route("/drivers/:id/download", axum::routing::get(download_driver))
+        .route("/drivers/{id}", axum::routing::get(get_driver))
+        .route("/drivers/{id}/download", axum::routing::get(download_driver))
 }
 
 async fn list_drivers(

@@ -13,8 +13,8 @@ const CACHE_STALE_HEADER: &'static str = "X-Cache-Stale";
 pub fn routes() -> Router<AppState> {
     Router::new()
         .route("/templates", axum::routing::get(list_templates))
-        .route("/templates/:id", axum::routing::get(get_template))
-        .route("/templates/:id/download", axum::routing::get(download_template))
+        .route("/templates/{id}", axum::routing::get(get_template))
+        .route("/templates/{id}/download", axum::routing::get(download_template))
 }
 
 async fn list_templates(
