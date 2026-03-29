@@ -1,9 +1,10 @@
 services:
   api:
+    container_name: tinyiothub-marketplace
     build:
       context: ./api
       dockerfile: Dockerfile
-    image: chenguorongz/tinyiothub-marketplace-api:latest
+    image: chenguorongz/tinyiothub-marketplace:latest
     ports:
       - "3003:3003"
     environment:
