@@ -1,4 +1,0 @@
-[
-  { "type": "template", "repo": "Grong/tinyiothub-marketplace-repo", "path": "templates" },
-  { "type": "driver", "repo": "Grong/tinyiothub-marketplace-repo", "path": "drivers" }
-]
