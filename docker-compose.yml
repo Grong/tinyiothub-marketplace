@@ -18,16 +18,3 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-
-  web:
-    build:
-      context: ./web
-      dockerfile: Dockerfile
-    image: chenguorongz/tinyiothub-marketplace-web:latest
-    ports:
-      - "8080:80"
-    depends_on:
-      - api
-
-volumes:
-  sled-data:

@@ -1,7 +1,5 @@
 # Build artifacts
 api/target/
-web/dist/
-web/node_modules/
 
 # Environment
 .env
