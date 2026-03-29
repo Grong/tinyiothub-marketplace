@@ -6,7 +6,6 @@ mod sync;
 
 use std::sync::Arc;
 use axum::Router;
-use tower_http::services::ServeDir;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use infrastructure::cache::SledCache;
 use sync::SyncService;
@@ -22,7 +21,6 @@ fn build_app(state: AppState) -> Router {
     Router::new()
         .merge(api::health::routes())
         .nest("/api/v1", api::v1::routes())
-        .nest_service("/static", ServeDir::new("web/dist"))
         .with_state(state)
 }
 
